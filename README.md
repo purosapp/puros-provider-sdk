@@ -103,7 +103,7 @@ Puros imports packages through a strict reader that accepts only this format. It
 
 ## Continuous integration
 
-The first-party providers (for example [puros-provider-soundcloud](https://github.com/jacobbvfx/puros-provider-soundcloud/blob/main/.github/workflows/build.yml)) use one GitHub Actions workflow you can copy: on a `macos-15` runner it runs `npm ci`, `validate`, `typecheck`, `test`, caches `~/Library/Caches/puros-build`, runs `npm run package` and uploads `release/` as an artifact. A tag `v<version>` matching the manifest publishes a GitHub release, signed when the repository secret `PUROS_PROVIDER_SIGNING_KEY` holds the publisher key (PEM).
+The first-party providers (for example [puros-provider-soundcloud](https://github.com/jacobbvfx/puros-provider-soundcloud/blob/main/.github/workflows/build.yml)) use one GitHub Actions workflow you can copy: on a `macos-15` runner it runs `npm ci`, `validate`, `typecheck`, `test`, caches `~/Library/Caches/puros-build`, runs `npm run package` and uploads `release/` as an artifact. Every push to `main` publishes a GitHub release `v<version>-build.<run>` with the ZIP, and a tag `v<version>` matching the manifest publishes `v<version>`; released packages are signed when the repository secret `PUROS_PROVIDER_SIGNING_KEY` holds the publisher key (PEM).
 
 ## Manifest reference
 
