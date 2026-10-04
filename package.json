@@ -1,0 +1,51 @@
+{
+  "name": "puros-provider-sdk",
+  "version": "1.0.0",
+  "description": "Provider API v1, packer and build tools for Puros provider plugins.",
+  "keywords": ["puros", "provider", "plugin", "music", "macos"],
+  "license": "MIT",
+  "author": "jacobbvfx (https://github.com/jacobbvfx)",
+  "homepage": "https://github.com/purosapp/puros-provider-sdk#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/purosapp/puros-provider-sdk.git"
+  },
+  "bugs": "https://github.com/purosapp/puros-provider-sdk/issues",
+  "type": "module",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./provider-manifest.schema.json": "./src/provider-manifest.schema.json",
+    "./tooling": "./tooling/index.mjs",
+    "./package.json": "./package.json"
+  },
+  "bin": {
+    "puros-provider": "bin/puros-provider.mjs"
+  },
+  "files": [
+    "bin",
+    "dist",
+    "src",
+    "!src/**/*.test.ts",
+    "tooling"
+  ],
+  "scripts": {
+    "build": "rm -rf dist && tsc -p tsconfig.build.json && vite build",
+    "typecheck": "tsc",
+    "test": "vitest run",
+    "prepack": "npm run build"
+  },
+  "dependencies": {
+    "vite": "^8.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.12.2",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.7"
+  }
+}

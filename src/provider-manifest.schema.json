@@ -1,0 +1,424 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://puros.app/schemas/provider-manifest-v1.json",
+  "title": "Puros Provider Manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "apiVersion",
+    "id",
+    "version",
+    "displayName",
+    "icon",
+    "brandColor",
+    "defaultPriority",
+    "capabilities"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "apiVersion": { "const": 1 },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{1,31}$",
+      "not": { "enum": ["local", "m3u"] }
+    },
+    "version": { "type": "string", "minLength": 1, "maxLength": 64 },
+    "displayName": { "type": "string", "minLength": 1, "maxLength": 80 },
+    "description": { "type": "string", "maxLength": 500 },
+    "homepage": { "type": "string", "format": "uri", "pattern": "^https://" },
+    "icon": { "$ref": "#/$defs/relativePath" },
+    "brandColor": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" },
+    "defaultPriority": { "type": "integer", "minimum": 0, "maximum": 1000000 },
+    "capabilities": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/capability" }
+    },
+    "librarySyncMode": { "const": "host-mirror" },
+    "playbackTimeoutMs": { "type": "integer", "minimum": 120000, "maximum": 1800000 },
+    "requiredHostFeatures": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "enum": ["audio-format.vorbis", "playback.source-format", "playback.format-support", "audio-format.opus", "settings.form", "auth.browser-session"] }
+    },
+    "settings": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/settingControl" }
+    },
+    "permissions": { "$ref": "#/$defs/permissions" },
+    "build": { "$ref": "#/$defs/build" }
+  },
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9._-]{0,63}$"
+    },
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300,
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+    },
+    "origin": {
+      "type": "string",
+      "pattern": "^https://[^/]+$"
+    },
+    "capability": {
+      "enum": [
+        "auth",
+        "catalog.search",
+        "catalog.entities",
+        "catalog.home",
+        "library.sync",
+        "playlists",
+        "playback.resolve",
+        "playback.prefetch",
+        "playback.progressive",
+        "quality.tiers",
+        "metadata.artwork",
+        "metadata.bio",
+        "metadata.credits"
+      ]
+    },
+    "providerValue": {
+      "oneOf": [
+        { "type": ["string", "number", "boolean", "null"] },
+        { "type": "array", "items": { "$ref": "#/$defs/providerValue" } },
+        { "type": "object", "additionalProperties": { "$ref": "#/$defs/providerValue" } }
+      ]
+    },
+    "textSetting": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "label", "type", "key", "storage"],
+      "properties": {
+        "id": { "$ref": "#/$defs/identifier" },
+        "label": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "description": { "type": "string", "maxLength": 300 },
+        "type": { "const": "text" },
+        "key": { "$ref": "#/$defs/identifier" },
+        "storage": { "enum": ["setting", "secret"] },
+        "placeholder": { "type": "string", "maxLength": 200 }
+      }
+    },
+    "selectSetting": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "label", "type", "key", "storage", "options"],
+      "properties": {
+        "id": { "$ref": "#/$defs/identifier" },
+        "label": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "description": { "type": "string", "maxLength": 300 },
+        "type": { "const": "select" },
+        "key": { "$ref": "#/$defs/identifier" },
+        "storage": { "const": "setting" },
+        "options": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["value", "label"],
+            "properties": {
+              "value": { "type": "string", "maxLength": 100 },
+              "label": { "type": "string", "minLength": 1, "maxLength": 100 }
+            }
+          }
+        },
+        "defaultValue": { "type": "string" }
+      }
+    },
+    "toggleSetting": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "label", "type", "key", "storage"],
+      "properties": {
+        "id": { "$ref": "#/$defs/identifier" },
+        "label": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "description": { "type": "string", "maxLength": 300 },
+        "type": { "const": "toggle" },
+        "key": { "$ref": "#/$defs/identifier" },
+        "storage": { "const": "setting" },
+        "defaultValue": { "type": "boolean" }
+      }
+    },
+    "actionSetting": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "label", "type", "action"],
+      "properties": {
+        "id": { "$ref": "#/$defs/identifier" },
+        "label": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "description": { "type": "string", "maxLength": 300 },
+        "type": { "const": "action" },
+        "action": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["capability", "method"],
+          "properties": {
+            "capability": { "$ref": "#/$defs/capability" },
+            "method": { "$ref": "#/$defs/identifier" },
+            "args": { "type": "array", "items": { "$ref": "#/$defs/providerValue" } }
+          }
+        },
+        "destructive": { "type": "boolean", "default": false }
+      }
+    },
+    "statusSetting": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "label", "type", "statusKey"],
+      "properties": {
+        "id": { "$ref": "#/$defs/identifier" },
+        "label": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "description": { "type": "string", "maxLength": 300 },
+        "type": { "const": "status" },
+        "statusKey": { "$ref": "#/$defs/identifier" }
+      }
+    },
+    "formSetting": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "label", "type", "fields", "submit"],
+      "properties": {
+        "id": { "$ref": "#/$defs/identifier" },
+        "label": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "description": { "type": "string", "maxLength": 300 },
+        "type": { "const": "form" },
+        "instructions": {
+          "type": "array",
+          "maxItems": 12,
+          "items": { "type": "string", "minLength": 1, "maxLength": 300 }
+        },
+        "fields": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 8,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "label"],
+            "properties": {
+              "id": { "$ref": "#/$defs/identifier" },
+              "label": { "type": "string", "minLength": 1, "maxLength": 100 },
+              "description": { "type": "string", "maxLength": 300 },
+              "placeholder": { "type": "string", "maxLength": 200 },
+              "multiline": { "type": "boolean" },
+              "sensitive": { "type": "boolean" },
+              "required": { "type": "boolean" },
+              "maxLength": { "type": "integer", "minimum": 1, "maximum": 65536 }
+            }
+          }
+        },
+        "submit": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["label", "capability", "method"],
+          "properties": {
+            "label": { "type": "string", "minLength": 1, "maxLength": 60 },
+            "capability": { "$ref": "#/$defs/capability" },
+            "method": { "$ref": "#/$defs/identifier" }
+          }
+        }
+      }
+    },
+    "settingControl": {
+      "oneOf": [
+        { "$ref": "#/$defs/formSetting" },
+        { "$ref": "#/$defs/textSetting" },
+        { "$ref": "#/$defs/selectSetting" },
+        { "$ref": "#/$defs/toggleSetting" },
+        { "$ref": "#/$defs/actionSetting" },
+        { "$ref": "#/$defs/statusSetting" }
+      ]
+    },
+    "authCollect": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name", "source", "cookieName"],
+          "properties": {
+            "name": { "$ref": "#/$defs/identifier" },
+            "source": { "const": "cookie" },
+            "cookieName": { "type": "string", "minLength": 1 },
+            "domain": { "type": "string" },
+            "path": { "type": "string" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name", "source", "origin", "key"],
+          "properties": {
+            "name": { "$ref": "#/$defs/identifier" },
+            "source": { "const": "localStorage" },
+            "origin": { "$ref": "#/$defs/origin" },
+            "key": { "type": "string", "minLength": 1 }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name", "source", "origin", "key"],
+          "properties": {
+            "name": { "$ref": "#/$defs/identifier" },
+            "source": { "const": "url.searchParam" },
+            "origin": { "$ref": "#/$defs/origin" },
+            "key": { "type": "string", "minLength": 1 }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name", "source", "origin", "domains", "requiredCookies"],
+          "properties": {
+            "name": { "$ref": "#/$defs/identifier" },
+            "source": { "const": "cookieJar" },
+            "origin": { "$ref": "#/$defs/origin" },
+            "domains": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 8,
+              "uniqueItems": true,
+              "items": { "type": "string", "pattern": "^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z]{2,63}$" }
+            },
+            "requiredCookies": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 16,
+              "uniqueItems": true,
+              "items": { "type": "string", "pattern": "^[!#$%&'*+\\-.^_`|~0-9A-Za-z]+$" }
+            }
+          }
+        }
+      ]
+    },
+    "permissions": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "runtimeEnvironment": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]{0,63}$" }
+        },
+        "networkOrigins": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/origin" }
+        },
+        "externalOrigins": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/origin" }
+        },
+        "secrets": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/identifier" }
+        },
+        "authCollections": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "allowedOrigins", "values"],
+            "properties": {
+              "id": { "$ref": "#/$defs/identifier" },
+              "allowedOrigins": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": { "$ref": "#/$defs/origin" }
+              },
+              "values": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": { "$ref": "#/$defs/authCollect" }
+              }
+            }
+          }
+        },
+        "helpers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "executable"],
+            "properties": {
+              "id": { "$ref": "#/$defs/identifier" },
+              "executable": { "$ref": "#/$defs/relativePath" },
+              "processPriority": { "const": "below-normal" },
+              "allowedArguments": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": { "type": "string", "maxLength": 100 }
+              },
+              "argumentTemplate": {
+                "description": "Exact argv with one existing cache input and at most one new cache output.",
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 32,
+                "items": {
+                  "oneOf": [
+                    { "type": "string", "minLength": 1, "maxLength": 100 },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": ["cachePath"],
+                      "properties": { "cachePath": { "enum": ["input", "output"] } }
+                    }
+                  ]
+                }
+              }
+            },
+            "not": { "required": ["allowedArguments", "argumentTemplate"] }
+          }
+        }
+      }
+    },
+    "buildStep": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["command"],
+      "properties": {
+        "command": { "$ref": "#/$defs/relativePath" },
+        "args": { "type": "array", "items": { "type": "string", "maxLength": 500 } },
+        "cwd": { "$ref": "#/$defs/relativePath" },
+        "platforms": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "enum": ["darwin", "linux", "win32"] }
+        }
+      }
+    },
+    "buildResource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["from", "to"],
+      "properties": {
+        "from": { "$ref": "#/$defs/relativePath" },
+        "to": { "$ref": "#/$defs/relativePath" },
+        "filter": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1, "maxLength": 300 }
+        }
+      }
+    },
+    "build": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "steps": { "type": "array", "items": { "$ref": "#/$defs/buildStep" } },
+        "extraResources": { "type": "array", "items": { "$ref": "#/$defs/buildResource" } },
+        "binaries": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/relativePath" }
+        }
+      }
+    }
+  }
+}
