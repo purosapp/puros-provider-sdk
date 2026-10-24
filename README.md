@@ -165,6 +165,10 @@ Use `host.cache` to look up and register completed files and let Puros own cache
 
 Puros identifies every artist, album, track and playlist by provider ID, entity type and source ID. IDs may overlap across plugins; names, UPCs and ISRCs never merge their catalogs. Search and profile requests target one provider, and all returned children and credits must belong to that provider. Keep source IDs stable across search, library sync, entity details and playback. Playback and prefetch request the exact recorded source ID; if it is unavailable, return the appropriate error rather than substituting another recording.
 
+## Track availability
+
+Services list tracks the signed-in account cannot stream: region locks, plan limits, takedowns, pre-releases. Report them instead of dropping them, so Puros shows the row greyed out the way the service's own app does and keeps it out of queues. Set `playable` on every `ProviderTrackV1` whenever the service says (`true` or `false`, with an `unavailableReason`), in search, entity bundles, home collections, playlists and library sync alike: each listing replaces what Puros knew. When only playback finds out, have `resolve`/`prefetch` throw `ProviderApiError` with code `TRACK_UNAVAILABLE` and `details.reason`; Puros greys the track and skips to the next one. Both are optional (SDK 1.1): hosts that predate them ignore the field and treat the code as `INTERNAL`, so no `requiredHostFeatures` entry is needed.
+
 ## Isolation and review
 
 Each provider runs in its own Electron `utilityProcess` with a provider-data `cwd`, restricted environment, call deadlines, payload/event bounds and a crash/restart policy. **This is not an OS sandbox.** Provider code has Node.js filesystem/process APIs and unrestricted network access; manifest origins are declarations, not network filtering. Users should install only providers they trust, and authors should document bundled helper binaries, their licenses and the remote service's terms.

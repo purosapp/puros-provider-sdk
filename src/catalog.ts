@@ -39,6 +39,7 @@ export interface ProviderArtistV1 {
   name: string
   normalizedName?: string | null
   artworkUrl?: string | null
+  /** Bio text in the format described on `ProviderBioResultV1.text`. */
   bio?: string | null
   bioUrl?: string | null
   genres?: string[]
@@ -66,6 +67,24 @@ export interface ProviderAlbumV1 {
   inLibrary?: boolean
 }
 
+/** Why the signed-in account cannot stream a track the service still lists. */
+export type ProviderTrackUnavailableReasonV1 =
+  /** Not licensed in the account's country or storefront. */
+  | 'region'
+  /** The account's plan cannot stream it (preview only, a higher tier needed). */
+  | 'subscription'
+  /** Taken down or no longer in the catalog. */
+  | 'removed'
+  /** Listed ahead of its release date. */
+  | 'unreleased'
+  /** The service offers only a stream Puros cannot play, such as DRM-only audio. */
+  | 'unsupported'
+  | 'other'
+
+export const PROVIDER_TRACK_UNAVAILABLE_REASONS_V1: readonly ProviderTrackUnavailableReasonV1[] = [
+  'region', 'subscription', 'removed', 'unreleased', 'unsupported', 'other',
+]
+
 export interface ProviderTrackV1 {
   sourceId: string
   title: string
@@ -85,6 +104,16 @@ export interface ProviderTrackV1 {
   providerUrl?: string | null
   inLibrary?: boolean
   format?: FormatInfoV1 | null
+  /**
+   * `false` when the service lists the track but this account cannot stream
+   * it: the row the service's own app greys out. Puros greys the row, keeps it
+   * out of queues and never resolves it. Set it on every track whenever the
+   * service says (`true` clears an earlier `false`); omit it only when the
+   * listing carries no availability. Hosts that predate the field ignore it.
+   */
+  playable?: boolean
+  /** Why `playable` is `false`; Puros shows it on the greyed row. */
+  unavailableReason?: ProviderTrackUnavailableReasonV1 | null
 }
 
 export interface ProviderPlaylistV1 {

@@ -15,6 +15,13 @@ export type ProviderErrorCodeV1 =
   | 'INCOMPATIBLE_API'
   | 'PROVIDER_UNAVAILABLE'
   | 'PROVIDER_CRASHED'
+  /**
+   * `playback.resolve`/`prefetch`: this account cannot stream the requested
+   * track. Put a `ProviderTrackUnavailableReasonV1` in `details.reason`; Puros
+   * greys the track and skips it in the queue until a listing reports it
+   * playable again. Hosts that predate the code treat it as `INTERNAL`.
+   */
+  | 'TRACK_UNAVAILABLE'
   | 'INTERNAL'
 
 export interface ProviderErrorV1 {

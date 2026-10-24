@@ -10,6 +10,11 @@ export interface ProviderArtworkResultV1 {
 }
 
 export interface ProviderBioResultV1 {
+  /**
+   * Plain text; blank lines separate paragraphs. Links are written
+   * `[label](https://…)` or, for this provider's own entities,
+   * `[label](puros:<artist|album|track|playlist>/<sourceId>)`. No HTML.
+   */
   text: string
   sourceUrl?: string
   genres?: string[]

@@ -1,6 +1,6 @@
 {
   "name": "puros-provider-sdk",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Provider API v1, packer and build tools for Puros provider plugins.",
   "keywords": ["puros", "provider", "plugin", "music", "macos"],
   "license": "MIT",
